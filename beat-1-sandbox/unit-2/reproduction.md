@@ -15,8 +15,7 @@ label is not graded.
 
 **GitHub username**
 
-[Your GitHub username, exactly as it appears on your profile — no `@`, no profile URL. Your
-comments upstream are identified by this name.]
+oimahawong
 
 ---
 
@@ -37,33 +36,27 @@ field is graded on, so copy across what you actually posted.]
 
 ## Eval iterations
 
-Answer all four sections. Quote source text directly; paraphrase does not satisfy these
-fields.
-
 **Run history**
 
-[The agreement score of each run you did, in order. A single run is a complete answer if
-only one run occurred. **The last score in your list must match the agreement line in the
-`eval-run.txt` you committed** — that file is the record of your final run.]
+1. First full run: 19/20 scored items agreed with gold (bar: 18/20 — PASS). The one miss was `pkg-05` (gold `accept`, graded `reject`, failing the `Steps-followable` check).
+2. Revised `Steps-followable`'s pass condition, then re-ran with `--only pkg-05,pkg-08,pkg-18,pkg-20` (pkg-05 to confirm the fix, plus three canaries: pkg-08 for `wrong-target`, pkg-18 for `unfollowable-comms`, pkg-20 for the single-package `disclosure` category, since a loosened check can flip a package that previously agreed). Result: 4/4 agreed, including pkg-05 flipping to `accept`.
+3. Confirming full run, saved with `--save-run eval-run.txt`: **20/20 scored items agreed with gold (bar: 18/20 — PASS)**, category floor met in every category (clear-accept 8/8, disclosure 1/1, no-evidence 4/4, unfollowable-comms 3/3, wrong-target 4/4). This is the run committed in `eval-run.txt`.
 
 **Package analysis**
 
-[Pick one scored package (`pkg-01` through `pkg-20` — the four `calib-` packages are never
-scored). Name it by id, say what your rubric decided and what the gold label said, and
-explain why your rubric read it that way.]
+`pkg-05` (conda/conda#16543, category `clear-accept`, gold verdict `accept`). My rubric's first pass graded it `reject`, failing `Steps-followable`. The candidate repro report describes its triggering input file in prose — "a minimal `env.yml` containing a valid `dependencies:` list plus a `category:` section (the section conda does not recognize)" — rather than pasting the literal YAML. My original check wording required that "every command, input file, and triggering condition... is given in the report itself," which a literal read treats as requiring the raw file content, so the grader failed it for not showing the file verbatim. But the report does pin down the one thing that actually matters: the exact field name (`category:`) that conda's schema rejects, which is enough for a stranger to reconstruct an equivalent file and trigger the same `EnvironmentSectionNotValid` behavior. The gold label calls this a clear accept precisely because the repro is faithful and followable even though it's terse. My rubric was reading the check's own write-up shape (verbatim file dump) instead of the outcome (can someone else recreate the trigger), which is exactly the failure mode `rubric.md`'s own template warns against.
 
 **Check rationale**
 
-[Quote one check from the `rubric.md` you uploaded to `tools/repro-check/`, exactly as it reads now.
-Then say why it reads that way — what you revised to get there, or what you rejected in
-favour of it.]
+The `Steps-followable` check in `rubric.md` as it reads now:
+
+> Pass if a stranger with the stated environment could re-run the same steps and land in the same state: every command and triggering condition the issue requires is given in the report itself (not referenced as living in a private repo, an unshared config, or "my setup"), and any input file's content is either shown verbatim or described precisely enough that the specific triggering element (the exact flag, field, or value that causes the bug) is fully pinned down, even if incidental details are paraphrased. Fail if the trigger depends on a resource the report does not share, if the steps skip the specific condition the issue says causes the bug (e.g. running a plain case instead of the boundary/edge case named in the issue), or if an input file is described too vaguely to pin down the triggering content.
+
+It reads this way because the original version only said an input file must be "given in the report itself," which I'd written with verbatim file contents in mind. `pkg-05` showed that was too strict: a precise prose description of a trivial file can be exactly as followable as pasting it, so I added the clause allowing either form, gated on whether the specific triggering element is pinned down rather than cosmetic completeness. I rejected the alternative of just deleting the input-file requirement entirely, because `pkg-18` (private monorepo, unshared config) needs this same check to still fail on an unfollowable resource — the fix had to loosen "how precisely" without loosening "must be shareable at all."
 
 **Trade-offs**
 
-[Every check gives something up. Any one of these is a complete answer: a package whose
-result it changes, a canary you re-ran with `--only`, a case you accept it will miss, or a
-stated reason nothing changed elsewhere. "Nothing changed, and here is how I know" earns
-the point in full when the reason follows.]
+Loosening `Steps-followable` to accept a precise description in place of a verbatim file trades a small risk: a confidently-written but inaccurate description of an input file could now pass this check even if the actual file (if shown) would reveal a subtly different trigger than described. I accept that risk because the alternative — requiring verbatim file contents always — would keep failing faithful, minimal reports like `pkg-05` on formatting grounds rather than substance, which is the opposite of what the check is supposed to judge. I re-ran canaries after the change (`pkg-08` wrong-target, `pkg-18` unfollowable-comms, `pkg-20` disclosure) specifically because this check also gates those categories, and confirmed none flipped: `pkg-18`'s failure still comes from the trigger living in an unshared private repo (a condition the loosened wording explicitly still fails), and `pkg-08`/`pkg-20` don't depend on this check's wording at all, so they were unaffected either way.
 
 ---
 
