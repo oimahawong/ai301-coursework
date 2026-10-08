@@ -1,6 +1,6 @@
 # Unit 2 — Claim and Reproduce
 
-Path: `beat-1-sandbox/unit-2/reproduction.md`
+[Path: `beat-1-sandbox/unit-2/reproduction.md`
 
 Record of your claim and reproduction on the issue you chose in Unit 1, and of the
 evaluation runs that produced `eval-run.txt`. This file is graded at the path above; a copy
@@ -8,7 +8,9 @@ kept anywhere else in the repository is not read.
 
 Complete every labelled field below. Each is graded on its own; content placed under the wrong
 label is not graded.
+](https://github.com/codepath/pathreview-ai301-fa26-s1/issues/73#issuecomment-6051546700
 
+Hi, I'd like to work on this README/.env.example mismatch as my Unit 2 reproduction. I'll compare the Quick Start instructions in README.md, the complete .env.example template, and the Settings fields in core/config.py against each other — and check docs/SETUP.md too, since it also references the LLM provider setup — to confirm exactly where the OpenRouter key and LLM_PROVIDER guidance disagree. I'll follow up with my own reproduction report recording the commit, environment, and steps I used.)
 ---
 
 ## Your identity upstream
